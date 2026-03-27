@@ -18,13 +18,10 @@ var wg sync.WaitGroup
 func main() {
 
 	args := os.Args
-
 	port := args[1]
 
 	store := cache.NewRedisCache[*domain.Bucket]("Shubham@100")
-
 	rateLimiter := ratelimiter.NewRateLimiter(store, &mu)
-
 	fmt.Println("Rate limiter started...")
 
 	app := fiber.New()
@@ -32,10 +29,8 @@ func main() {
 	app.Use(middelware.HandleRequestRate(rateLimiter))
 
 	app.Get("/", func(c fiber.Ctx) error {
-		dt, _ := store.Get(c.IP())
 		return c.Status(200).JSON(fiber.Map{
 			"message": "Success",
-			"data":    &dt,
 		})
 	})
 

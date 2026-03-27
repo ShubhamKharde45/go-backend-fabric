@@ -8,11 +8,11 @@ import (
 )
 
 type RateLimiter struct {
-	store domain.Cache[string, *domain.Bucket]
+	store domain.Cache[*domain.Bucket]
 	mu    *sync.Mutex
 }
 
-func NewRateLimiter(Store domain.Cache[string, *domain.Bucket], mu *sync.Mutex) *RateLimiter {
+func NewRateLimiter(Store domain.Cache[*domain.Bucket], mu *sync.Mutex) *RateLimiter {
 	return &RateLimiter{
 		store: Store,
 		mu:    mu,

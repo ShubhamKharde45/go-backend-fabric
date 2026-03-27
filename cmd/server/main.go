@@ -1,28 +1,37 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"sync"
 
-	"github.com/ShubhamKharde45/rate_limiter/internal/delivery/middelware"
 	"github.com/ShubhamKharde45/rate_limiter/internal/domain"
-	cache "github.com/ShubhamKharde45/rate_limiter/internal/infrastructure/cache"
+	"github.com/ShubhamKharde45/rate_limiter/internal/infrastructure/cache"
 	ratelimiter "github.com/ShubhamKharde45/rate_limiter/internal/infrastructure/rate_limiter"
+	"github.com/ShubhamKharde45/rate_limiter/internal/transport/http/middelware"
 	"github.com/gofiber/fiber/v3"
 )
 
 var mu sync.Mutex
+var wg sync.WaitGroup
 
 func main() {
 
-	store := cache.NewMemoryStore[string, *domain.Bucket]()
+	args := os.Args
+
+	port := args[1]
+
+	store := cache.NewRedisCache[*domain.Bucket]("Shubham@100")
+
 	rateLimiter := ratelimiter.NewRateLimiter(store, &mu)
+
+	fmt.Println("Rate limiter started...")
 
 	app := fiber.New()
 
 	app.Use(middelware.HandleRequestRate(rateLimiter))
 
 	app.Get("/", func(c fiber.Ctx) error {
-
 		dt, _ := store.Get(c.IP())
 		return c.Status(200).JSON(fiber.Map{
 			"message": "Success",
@@ -30,6 +39,13 @@ func main() {
 		})
 	})
 
-	app.Listen(":8080")
+	port = fmt.Sprintf(":%s", port)
+
+	fmt.Printf("Server started at %s", port)
+	err := app.Listen(port)
+
+	if err != nil {
+		panic(err)
+	}
 
 }

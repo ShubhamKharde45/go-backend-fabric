@@ -12,15 +12,16 @@ var wg sync.WaitGroup
 
 func main() {
 
-	args := os.Args
-
-	port := args[1]
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	port = fmt.Sprintf(":%s", port)
 
 	chn := make(chan struct{}, 10)
 
-	for i := 0; i < 100; i++ {
+	for i := 1; i > 0; i++ {
 
 		wg.Add(1)
 
@@ -42,7 +43,7 @@ func main() {
 
 func REQ(port string) {
 
-	resp, err := http.Get(fmt.Sprintf("http://localhost%s", port))
+	resp, err := http.Get("http://localhost")
 
 	if err != nil {
 		fmt.Println(err)

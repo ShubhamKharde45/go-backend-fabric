@@ -17,8 +17,10 @@ var wg sync.WaitGroup
 
 func main() {
 
-	args := os.Args
-	port := args[1]
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	store := cache.NewRedisCache[*domain.Bucket]("Shubham@100")
 	rateLimiter := ratelimiter.NewRateLimiter(store, &mu)
@@ -30,14 +32,12 @@ func main() {
 
 	app.Get("/", func(c fiber.Ctx) error {
 		return c.Status(200).JSON(fiber.Map{
-			"message": "Success",
+			"message": "Hello from Server : " + port,
 		})
 	})
 
-	port = fmt.Sprintf(":%s", port)
-
 	fmt.Printf("Server started at %s", port)
-	err := app.Listen(port)
+	err := app.Listen(":" + port)
 
 	if err != nil {
 		panic(err)
